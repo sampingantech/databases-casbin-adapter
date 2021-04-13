@@ -5,7 +5,7 @@ from casbin import Enforcer
 from databases import Database
 from pytest import fixture
 from sqlalchemy import Table, Column, String, Integer
-from sqlalchemy.sql.ddl import CreateTable, DropTable
+from sqlalchemy.sql.ddl import CreateTable
 
 from casbin_databases_adapter import DatabasesAdapter
 
@@ -38,7 +38,7 @@ async def casbin_rule_table(db: Database):
     return table
 
 
-@fixture(scope="session")
+@fixture(scope="function")
 async def setup_policies(db: Database, casbin_rule_table: Table):
     rows = [
         {"ptype": "p", "v0": "alice", "v1": "data1", "v2": "read"},
@@ -62,6 +62,5 @@ def model_conf_path():
 async def enforcer(
     db: Database, setup_policies, casbin_rule_table: Table, model_conf_path
 ) -> Enforcer:
-    print(setup_policies)
     adapter = DatabasesAdapter(db, table=casbin_rule_table)
     return Enforcer(model_conf_path, adapter)
