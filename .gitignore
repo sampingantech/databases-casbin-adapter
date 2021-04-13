@@ -1,4 +1,6 @@
 .idea
 venv
+.coverage
 
+__pycache__
 outputs

@@ -1,10 +1,12 @@
 import asyncio
+from asyncio import Task
 import functools
 from typing import List, Dict
 
 from casbin import persist, Model
 from databases import Database
 from sqlalchemy import Table
+import nest_asyncio
 
 
 class DatabasesAdapter(persist.Adapter):
@@ -14,15 +16,16 @@ class DatabasesAdapter(persist.Adapter):
         self.filtered: bool = filtered
 
     def load_policy(self, model: Model):
-        asyncio.create_task(
-            self.load_policy_async(model)
-        )
+        asyncio_run(self.load_policy_async(model))
 
     async def load_policy_async(self, model: Model):
         query = self.table.select()
         rows = await self.db.fetch_all(query)
         for row in rows:
-            persist.load_policy_line(str(row), model)
+            # convert row from tuple to csv format and removing the first column (id)
+            line = [i for i in row[1:] if i]
+            line = ", ".join(line)
+            persist.load_policy_line(line, model)
 
     def save_policy(self, model: Model):
         loop = asyncio.get_event_loop()
@@ -93,3 +96,29 @@ class DatabasesAdapter(persist.Adapter):
         for i, value in enumerate(rule):
             row.update({f"v{i}": value})
         return row
+
+
+def asyncio_run(future, as_task=True):
+    """
+    A better implementation of `asyncio.run`.
+
+    :param future: A future or task or call of an async method.
+    :param as_task: Forces the future to be scheduled as task (needed for e.g. aiohttp).
+
+    Link: https://stackoverflow.com/a/63593888
+    """
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:  # no event loop running:
+        loop = asyncio.new_event_loop()
+        return loop.run_until_complete(_to_task(future, as_task, loop))
+    else:
+        nest_asyncio.apply(loop)
+        return asyncio.run(_to_task(future, as_task, loop))
+
+
+def _to_task(future, as_task, loop):
+    if not as_task or isinstance(future, Task):
+        return future
+    return loop.create_task(future)
