@@ -3,7 +3,18 @@ from typing import List, Dict
 from casbin import persist, Model
 from databases import Database
 from sqlalchemy import Table
-import nest_asyncio
+
+from casbin_databases_adapter.utils import to_sync
+
+
+class Filter:
+    ptype: List[str] = []
+    v0: List[str] = []
+    v1: List[str] = []
+    v2: List[str] = []
+    v3: List[str] = []
+    v4: List[str] = []
+    v5: List[str] = []
 
 
 class DatabasesAdapter(persist.Adapter):
@@ -67,6 +78,21 @@ class DatabasesAdapter(persist.Adapter):
                 query = query.where(self.table.columns[f"v{field_index+1}"] == value)
         result = await self.db.execute(query)
         return True if result > 0 else False
+
+    @to_sync()
+    async def load_filtered_policy(self, model: Model, filter_: Filter) -> None:
+        query = self.table.select().order_by(self.table.columns.id)
+        for att, value in filter_.__dict__.items():
+            if len(value) > 0:
+                query = query.where(self.table.columns[att].in_(value))
+        rows = await self.db.fetch_all(query)
+        for row in rows:
+            # convert row from tuple to csv format and removing the first column (id)
+            line = [i for i in row[1:] if i]
+            persist.load_policy_line(", ".join(line), model)
+
+    def is_filtered(self):
+        return self.filtered
 
     @staticmethod
     def _policy_to_dict(p_type: str, rule: List[str]) -> Dict[str, str]:
