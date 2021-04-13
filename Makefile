@@ -5,3 +5,6 @@ test:
 install:
 	pip install -r requirements.txt
 	pip install -r requirements-test.txt
+
+check:
+	mypy casbin_databases_adapter/adapter.py
