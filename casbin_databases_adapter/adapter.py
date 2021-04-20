@@ -18,6 +18,9 @@ class Filter:
 
 
 class DatabasesAdapter(persist.Adapter):
+
+    cols = ["ptype"] + [f"v{i}" for i in range(6)]
+
     def __init__(self, db: Database, table: Table, filtered=False):
         self.db: Database = db
         self.table: Table = table
@@ -29,7 +32,7 @@ class DatabasesAdapter(persist.Adapter):
         rows = await self.db.fetch_all(query)
         for row in rows:
             # convert row from tuple to csv format and removing the first column (id)
-            line = [i for i in row[1:] if i]
+            line = [v for k, v in row.items() if k in self.cols and v is not None]
             persist.load_policy_line(", ".join(line), model)
 
     @to_sync()
@@ -68,7 +71,7 @@ class DatabasesAdapter(persist.Adapter):
 
     @to_sync()
     async def remove_filtered_policy(self, sec, ptype, field_index, *field_values):
-        query = self.table.select().where(self.table.columns.ptype == ptype)
+        query = self.table.delete().where(self.table.columns.ptype == ptype)
         if not (0 <= field_index <= 5):
             return False
         if not (1 <= field_index + len(field_values) <= 6):
@@ -77,7 +80,7 @@ class DatabasesAdapter(persist.Adapter):
             if len(value) > 0:
                 query = query.where(self.table.columns[f"v{field_index+1}"] == value)
         result = await self.db.execute(query)
-        return True if result > 0 else False
+        return True if result else False
 
     @to_sync()
     async def load_filtered_policy(self, model: Model, filter_: Filter) -> None:
@@ -88,7 +91,7 @@ class DatabasesAdapter(persist.Adapter):
         rows = await self.db.fetch_all(query)
         for row in rows:
             # convert row from tuple to csv format and removing the first column (id)
-            line = [i for i in row[1:] if i]
+            line = [v for k, v in row.items() if k in self.cols and v is not None]
             persist.load_policy_line(", ".join(line), model)
 
     def is_filtered(self):
