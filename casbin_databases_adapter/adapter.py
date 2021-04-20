@@ -18,6 +18,9 @@ class Filter:
 
 
 class DatabasesAdapter(persist.Adapter):
+
+    cols = ["ptype"] + [f"v{i}" for i in range(6)]
+
     def __init__(self, db: Database, table: Table, filtered=False):
         self.db: Database = db
         self.table: Table = table
@@ -29,7 +32,7 @@ class DatabasesAdapter(persist.Adapter):
         rows = await self.db.fetch_all(query)
         for row in rows:
             # convert row from tuple to csv format and removing the first column (id)
-            line = [i for i in row[1:] if i]
+            line = [v for k, v in row.items() if k in self.cols and v is not None]
             persist.load_policy_line(", ".join(line), model)
 
     @to_sync()
@@ -88,7 +91,7 @@ class DatabasesAdapter(persist.Adapter):
         rows = await self.db.fetch_all(query)
         for row in rows:
             # convert row from tuple to csv format and removing the first column (id)
-            line = [i for i in row[1:] if i]
+            line = [v for k, v in row.items() if k in self.cols and v is not None]
             persist.load_policy_line(", ".join(line), model)
 
     def is_filtered(self):
