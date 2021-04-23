@@ -1,9 +1,19 @@
 import asyncio
 import functools
+import threading
 from asyncio import Task
 from typing import Callable, Coroutine
 
-import nest_asyncio
+
+class RunThread(threading.Thread):
+    def __init__(self, func, args, kwargs):
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+        super().__init__()
+
+    def run(self):
+        self.result = asyncio.run(self.func(*self.args, **self.kwargs))
 
 
 def to_sync(as_task: bool = True):
@@ -31,8 +41,11 @@ def to_sync(as_task: bool = True):
                     _to_task(func(*args, **kwargs), as_task, loop)
                 )
             else:
-                nest_asyncio.apply(loop)
-                return asyncio.run(_to_task(func(*args, **kwargs), as_task, loop))
+                # handle nested event loop with thread
+                thread = RunThread(func, args, kwargs)
+                thread.start()
+                thread.join()
+                return thread.result
 
         return func_wrapper
 
