@@ -63,4 +63,6 @@ async def enforcer(
     db: Database, setup_policies, casbin_rule_table: Table, model_conf_path
 ) -> Enforcer:
     adapter = DatabasesAdapter(db, table=casbin_rule_table)
-    return Enforcer(model_conf_path, adapter)
+    enforcer = Enforcer(model_conf_path, adapter)
+    await enforcer.load_policy()
+    return enforcer

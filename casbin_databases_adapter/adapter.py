@@ -4,8 +4,6 @@ from casbin import persist, Model
 from databases import Database
 from sqlalchemy import Table
 
-from casbin_databases_adapter.utils import to_sync
-
 
 class Filter:
     ptype: List[str] = []
@@ -26,7 +24,6 @@ class DatabasesAdapter(persist.Adapter):
         self.table: Table = table
         self.filtered: bool = filtered
 
-    @to_sync()
     async def load_policy(self, model: Model):
         query = self.table.select()
         rows = await self.db.fetch_all(query)
@@ -35,7 +32,6 @@ class DatabasesAdapter(persist.Adapter):
             line = [v for k, v in row.items() if k in self.cols and v is not None]
             persist.load_policy_line(", ".join(line), model)
 
-    @to_sync()
     async def save_policy(self, model: Model):
         await self.db.execute(self.table.delete())
         query = self.table.insert()
@@ -54,12 +50,10 @@ class DatabasesAdapter(persist.Adapter):
         await self.db.execute_many(query, values)
         return True
 
-    @to_sync()
     async def add_policy(self, sec, p_type, rule):
         row = self._policy_to_dict(p_type, rule)
         await self.db.execute(self.table.insert(), row)
 
-    @to_sync()
     async def remove_policy(self, sec, p_type, rule):
         query = self.table.delete().where(self.table.columns.ptype == p_type)
         for i, value in enumerate(rule):
@@ -69,7 +63,6 @@ class DatabasesAdapter(persist.Adapter):
 
         return True if result > 0 else False
 
-    @to_sync()
     async def remove_filtered_policy(self, sec, ptype, field_index, *field_values):
         query = self.table.delete().where(self.table.columns.ptype == ptype)
         if not (0 <= field_index <= 5):
@@ -82,7 +75,6 @@ class DatabasesAdapter(persist.Adapter):
         result = await self.db.execute(query)
         return True if result else False
 
-    @to_sync()
     async def load_filtered_policy(self, model: Model, filter_: Filter) -> None:
         query = self.table.select().order_by(self.table.columns.id)
         for att, value in filter_.__dict__.items():
