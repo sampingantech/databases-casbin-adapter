@@ -1,3 +1,0 @@
-SQLAlchemy>=1.2.18
-databases>=0.2.6
-asynccasbin>=1.1.7
