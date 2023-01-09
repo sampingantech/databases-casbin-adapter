@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "databases-casbin-adapter"
+version = "0.1.0"
+description = "An adapter for PyCasbin that implemented by Databases library which support async process"
+authors = ["isasetiawan <10252610+isasetiawan@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "databases_casbin_adapter"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+SQLAlchemy = "1.4.46"
+databases = "0.7.0"
+asynccasbin = "1.1.8"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "7.2.0"
+pytest-cov = "4.0.0"
+alt-pytest-asyncio = "0.6.0"
+aiosqlite = "0.18.0"
+mypy = "0.991"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
