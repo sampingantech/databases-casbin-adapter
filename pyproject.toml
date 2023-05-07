@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "casbin_databases_adapter"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 SQLAlchemy = "1.4.46"
 databases = "0.7.0"
 asynccasbin = "1.1.8"
