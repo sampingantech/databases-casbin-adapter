@@ -5,7 +5,7 @@ description = "An adapter for PyCasbin that implemented by Databases library whi
 authors = ["isasetiawan <10252610+isasetiawan@users.noreply.github.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "databases_casbin_adapter"}]
+packages = [{include = "casbin_databases_adapter"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
