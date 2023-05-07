@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "databases-casbin-adapter"
-version = "0.1.0"
+version = "0.0.1"
 description = "An adapter for PyCasbin that implemented by Databases library which support async process"
 authors = ["isasetiawan <10252610+isasetiawan@users.noreply.github.com>"]
 license = "MIT"

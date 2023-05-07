@@ -9,7 +9,7 @@ with open(f"{HERE}/requirements.txt") as file:
 
 setup(
     name="databases-casbin-adapter",
-    version="1.0.0",
+    version="0.0.1",
     description="This is an Adapter for PyCasbin that implemented using Databases connection to achieve async process",
     long_description=README,
     long_description_content_type="text/markdown",
